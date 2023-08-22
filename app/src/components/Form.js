@@ -69,39 +69,43 @@ export const Form = () => {
   return (
     <form onSubmit={handleSubmit}>
       <div>
-        <label>First Name:</label>
+        <label id="first_name">First Name:</label>
         <input
           type="text"
           name="first_name"
+          aria-labelledby="first_name"
           value={formData.first_name}
           onChange={handleInputChange}
         />
         {formErrors.first_name && <p>{formErrors.first_name}</p>}
       </div>
       <div>
-        <label>Last Name:</label>
+        <label id="last_name">Last Name:</label>
         <input
           type="text"
           name="last_name"
+          aria-labelledby="last_name"
           value={formData.last_name}
           onChange={handleInputChange}
         />
         {formErrors.last_name && <p>{formErrors.last_name}</p>}
       </div>
       <div>
-        <label>Email:</label>
+        <label id="email">Email:</label>
         <input
           type="email"
           name="email"
+          aria-labelledby="email"
           value={formData.email}
           onChange={handleInputChange}
         />
         {formErrors.email && <p>{formErrors.email}</p>}
       </div>
       <div>
-        <label>Message:</label>
+        <label id="message">Message:</label>
         <textarea
           name="message"
+          aria-labelledby="message"
           value={formData.message}
           onChange={handleInputChange}
         />
