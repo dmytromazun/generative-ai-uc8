@@ -1,0 +1,328 @@
+I have to display a list (could be table) of values in store. Here is the source code:
+
+// App.js
+import { Provider } from 'react-redux'
+import store from './store'
+import './App.css'
+import { Form } from './components/Form'
+
+const App = () => (
+  <Provider store={store}>
+    <div className="App">
+      <Form />
+    </div>
+  </Provider>
+)
+
+export default App
+
+// Form.js
+
+import React, { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import validator from 'validator'
+import { updateField } from '../store'
+
+export const Form = () => {
+  const dispatch = useDispatch()
+
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    message: '',
+  })
+
+  const [formErrors, setFormErrors] = useState({})
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }))
+  }
+
+  const isFormValid = () => {
+    if (!formData.first_name) return false
+    if (!formData.last_name) return false
+    if (!validator.isEmail(formData.email)) return false
+    if (!formData.message || formData.message.length < 10) return false
+
+    return true
+  }
+
+  const validateFormAndSetErrors = () => {
+    let errors = {}
+
+    if (!formData.first_name) errors.first_name = 'First Name is required'
+    if (!formData.last_name) errors.last_name = 'Last Name is required'
+    if (!validator.isEmail(formData.email)) errors.email = 'Invalid Email'
+    if (!formData.message) {
+      errors.message = 'Message is required'
+    } else if (formData.message.length < 10) {
+      errors.message = 'Message should be at least 10 characters long'
+    }
+
+    setFormErrors(errors)
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+
+    validateFormAndSetErrors()
+
+    if (isFormValid()) {
+      for (let field in formData) {
+        dispatch(updateField({ fieldName: field, value: formData[field] }))
+      }
+      console.log('Data submitted to store')
+      setFormData({
+        first_name: '',
+        last_name: '',
+        email: '',
+        message: '',
+      })
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        <label>First Name:</label>
+        <input
+          type="text"
+          name="first_name"
+          value={formData.first_name}
+          onChange={handleInputChange}
+        />
+        {formErrors.first_name && <p>{formErrors.first_name}</p>}
+      </div>
+      <div>
+        <label>Last Name:</label>
+        <input
+          type="text"
+          name="last_name"
+          value={formData.last_name}
+          onChange={handleInputChange}
+        />
+        {formErrors.last_name && <p>{formErrors.last_name}</p>}
+      </div>
+      <div>
+        <label>Email:</label>
+        <input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleInputChange}
+        />
+        {formErrors.email && <p>{formErrors.email}</p>}
+      </div>
+      <div>
+        <label>Message:</label>
+        <textarea
+          name="message"
+          value={formData.message}
+          onChange={handleInputChange}
+        />
+        {formErrors.message && <p>{formErrors.message}</p>}
+      </div>
+      <button type="submit" disabled={!isFormValid()}>
+        Submit
+      </button>
+    </form>
+  )
+}
+
+// store.js
+
+import { createSlice, configureStore } from '@reduxjs/toolkit'
+
+const initialState = {
+  first_name: '',
+  last_name: '',
+  email: '',
+  message: '',
+}
+
+const formSlice = createSlice({
+  name: 'form',
+  initialState,
+  reducers: {
+    updateField: (state, action) => {
+      const { fieldName, value } = action.payload
+      state[fieldName] = value
+    },
+  },
+})
+
+const store = configureStore({
+  reducer: {
+    form: formSlice.reducer,
+  },
+})
+
+export const { updateField } = formSlice.actions
+export default store
+
+
+ChatGPT
+If you want to display the values from the store, you can make use of the useSelector hook from react-redux to access the state from your Redux store. This is how you can modify the App component to show the values stored in the Redux state:
+
+First, import the required hooks from react-redux.
+Create a new component that will be responsible for displaying the values.
+Access the state using useSelector and display it in the component.
+Let's implement these steps:
+
+jsx
+Copy code
+// App.js
+import { Provider, useSelector } from 'react-redux'
+import store from './store'
+import './App.css'
+import { Form } from './components/Form'
+
+const DisplayValues = () => {
+  // Access the form values from the store
+  const formValues = useSelector((state) => state.form)
+
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        {Object.entries(formValues).map(([key, value]) => (
+          <tr key={key}>
+            <td>{key}</td>
+            <td>{value}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
+const App = () => (
+  <Provider store={store}>
+    <div className="App">
+      <Form />
+      <DisplayValues />
+    </div>
+  </Provider>
+)
+
+export default App
+Now, the App component renders a DisplayValues component beneath the form, which will display all the form values stored in your Redux store in a table format.
+
+
+
+
+User
+add styles
+ChatGPT
+Certainly! I'll add styles for the table and the overall layout. We'll use simple CSS for this purpose.
+
+Styles for App.css
+We'll add styles for the overall layout, the form, and the table.
+
+css
+Copy code
+/* App.css */
+
+.App {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+}
+
+form {
+  margin-bottom: 30px;
+  border: 1px solid #ccc;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+input, textarea, button {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+}
+
+button:disabled {
+  background-color: #ddd;
+  cursor: not-allowed;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #ddd;
+}
+
+table, th, td {
+  border: 1px solid #ddd;
+}
+
+th, td {
+  text-align: left;
+  padding: 8px;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+tr:nth-child(even) {
+  background-color: #f5f5f5;
+}
+
+p {
+  color: red;
+  margin: 5px 0;
+}
+Updating the React components
+Now, let's add class names to the React components to take advantage of the above styles.
+
+For Form.js:
+
+jsx
+Copy code
+// ... (rest of the code)
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="input-group">
+        <label>First Name:</label>
+        <input
+          type="text"
+          name="first_name"
+          value={formData.first_name}
+          onChange={handleInputChange}
+        />
+        {formErrors.first_name && <p>{formErrors.first_name}</p>}
+      </div>
+      // ... (similarly for other input groups)
+
+      <button type="submit" disabled={!isFormValid()}>
+        Submit
+      </button>
+    </form>
+  )
+For the DisplayValues component within App.js:
+
+No changes required as we've styled based on element tags.
+
+That's it! With these styles, you should have a cleaner look for the form and the table. Adjust the styles as per your specific needs or preferences.
